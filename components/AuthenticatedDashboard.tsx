@@ -1,3 +1,4 @@
+import { useMsal } from "@azure/msal-react";
 import { TodoTaskList } from "@microsoft/microsoft-graph-types";
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "react-feather";
@@ -7,6 +8,8 @@ import TaskBoard from "./TaskBoard";
 const AuthenticatedDashboard = () => {
   const [taskLists, setTaskLists] = useState<TodoTaskList[]>([]);
   const [currentTaskList, setCurrentTaskList] = useState<TodoTaskList>();
+  const { instance } = useMsal();
+  const activeAccount = instance.getActiveAccount();
 
   const fetchTaskLists = async () => {
     setTaskLists(await getTaskLists());
@@ -58,7 +61,13 @@ const AuthenticatedDashboard = () => {
             </section>
             <section className="p-4 bg-gray-700 shadow rounded-lg flex gap-4 flex-col">
               <h2 className="text-2xl font-bold">Your account</h2>
-              {"<"}redacted{">"}
+              <h3 className="text-xl font-semibold">{activeAccount.name}</h3>
+              <a
+                className="cursor-pointer border-b border-transparent hover:border-white transition-color w-max"
+                onClick={() => instance.logout()}
+              >
+                Sign out
+              </a>
             </section>
           </div>
         )}
