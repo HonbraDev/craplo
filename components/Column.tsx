@@ -7,13 +7,13 @@ import Task from "./Task";
 const Column: FC<{
   column: ColumnType;
   tasks: TodoTask[];
-  fetchTasks: () => void;
-}> = ({ column, tasks, fetchTasks }) => {
+  deleteTask: (id: string) => Promise<void>;
+}> = ({ column, tasks, deleteTask }) => {
   return (
     <Droppable droppableId={column.id}>
       {(provided) => (
         <div
-          className="flex flex-col h-full"
+          className="flex flex-col h-full overflow-y-auto"
           ref={provided.innerRef}
           {...provided.droppableProps}
         >
@@ -22,8 +22,8 @@ const Column: FC<{
               key={task.id}
               task={task}
               index={index}
-              fetchTasks={fetchTasks}
               listId={column.id}
+              deleteTask={deleteTask}
             />
           ))}
 
