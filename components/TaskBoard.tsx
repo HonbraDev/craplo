@@ -22,19 +22,21 @@ const TaskBoard: FC<{ taskListId: string }> = ({ taskListId }) => {
   }, []);
 
   const onDragEnd = async (result: DropResult) => {
-    if (!result.destination || result.source == result.destination) return;
+    if (
+      !result.destination ||
+      (result.source.droppableId === result.destination.droppableId &&
+        result.source.index === result.destination.index)
+    )
+      return;
 
     const taskStateCopy = { ...taskState };
 
-    // remove element
     taskStateCopy.columns[result.source.droppableId].taskIds.splice(
       taskStateCopy.columns[result.source.droppableId].taskIds.indexOf(
         result.draggableId
       ),
       1
     );
-
-    // array.splice(index, 0, ...elements);
 
     taskStateCopy.columns[result.destination.droppableId].taskIds.splice(
       result.destination.index,
@@ -44,25 +46,30 @@ const TaskBoard: FC<{ taskListId: string }> = ({ taskListId }) => {
 
     setTaskState(taskStateCopy);
 
-    const taskPromises = taskStateCopy.columns[
+    const tasks = taskStateCopy.columns[
       result.destination.droppableId
-    ].taskIds.map((taskId) => getTask(taskListId, taskId));
+    ].taskIds.map((taskId) => taskState.tasks[taskId]);
 
-    const tasks = await Promise.all(taskPromises);
+    const updatedTasks = tasks.map((task, index) => ({
+      ...task,
+      status: result.destination.droppableId as TaskStatus,
+      body: {
+        content: index.toString(),
+      },
+    }));
 
-    console.log(tasks);
+    const filteredTasks = updatedTasks.filter((task, index) => {
+      return (
+        tasks[index].body.content !== task.body.content ||
+        tasks[index].status !== task.status
+      );
+    });
 
-    await Promise.all(
-      tasks.map((task, index) =>
-        updateTask(taskListId, task.id, {
-          ...task,
-          status: result.destination.droppableId as TaskStatus,
-          body: {
-            content: index.toString(),
-          },
-        })
-      )
+    const updateTaskPromises = filteredTasks.map((task, index) =>
+      updateTask(taskListId, task.id, task)
     );
+
+    await Promise.all(updateTaskPromises);
 
     fetchTasks();
   };
@@ -78,7 +85,7 @@ const TaskBoard: FC<{ taskListId: string }> = ({ taskListId }) => {
             );
 
             return (
-              <div className="flex flex-col p-4 border border-transparent hover:border-gray-700 focus-within:border-gray-700 rounded-lg transition-colors gap-4 pb-0">
+              <div className="flex flex-col p-4 border border-transparent /* hover: */ border-gray-700 focus-within:border-gray-700 rounded-lg transition-colors gap-4 pb-0">
                 <h2 className="text-xl font-bold">{column.title}</h2>
                 <Column
                   key={column.id}
