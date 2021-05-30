@@ -13,7 +13,7 @@ const Column: FC<{
     <Droppable droppableId={column.id}>
       {(provided) => (
         <div
-          className="flex flex-col h-full overflow-y-auto"
+          className="flex flex-col h-full overflow-y-auto pb-2"
           ref={provided.innerRef}
           {...provided.droppableProps}
         >
@@ -26,7 +26,6 @@ const Column: FC<{
               deleteTask={deleteTask}
             />
           ))}
-
           {provided.placeholder}
         </div>
       )}

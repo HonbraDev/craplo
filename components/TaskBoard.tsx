@@ -108,7 +108,7 @@ const TaskBoard: FC<{ taskListId: string }> = ({ taskListId }) => {
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-4 h-full">
+        <div className="flex gap-4">
           {taskState.columnOrder.map((columnId) => {
             const column = taskState.columns[columnId];
             const tasks = column.taskIds.map(
@@ -118,10 +118,12 @@ const TaskBoard: FC<{ taskListId: string }> = ({ taskListId }) => {
             return (
               <div
                 key={column.id}
-                className="flex flex-col border border-transparent transition-colors gap-4 pb-0 w-60 p-2"
+                className="flex flex-col gap-4 pb-0 w-60 p-4 bg-white text-black rounded-lg"
+                style={{
+                  height: "calc(min-content + 5rem)",
+                }}
               >
                 <h2 className="text-xl font-bold">{column.title}</h2>
-
                 <Column
                   key={column.id}
                   column={column}

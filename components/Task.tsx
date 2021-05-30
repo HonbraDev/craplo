@@ -16,7 +16,7 @@ const Task: FC<{
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className="px-4 py-3 w-full shadow rounded-lg bg-gray-700 mb-4 flex items-center justify-between group"
+          className="px-4 py-3 w-full border border-gray-400 rounded-lg bg-white mb-4 flex items-center justify-between group"
         >
           <span>{task.title}</span>
           <X

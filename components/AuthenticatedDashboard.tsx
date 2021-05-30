@@ -18,7 +18,7 @@ const AuthenticatedDashboard = () => {
       setLoading(false);
       if (!currentTaskList) setCurrentTaskList(fetchedTaskLists[0]);
     } catch (e) {
-      console.error(e)
+      console.error(e);
       toast.error(`Failed to fetch taskLists.`);
     }
   };
