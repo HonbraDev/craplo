@@ -55,3 +55,6 @@ export const getTask = async (listId: string, id: string) =>
 
 export const createTask = async (listId: string, task: TodoTask) =>
   (await client.api(`/me/todo/lists/${listId}/tasks/`).post(task)) as TodoTask;
+
+export const deleteTask = async (listId: string, id: string) =>
+  await client.api(`/me/todo/lists/${listId}/tasks/${id}`).delete();

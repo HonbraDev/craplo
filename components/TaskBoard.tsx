@@ -1,7 +1,12 @@
 import { FC, useEffect, useState } from "react";
 import Column from "../components/Column";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { getTask, getTasksObject, updateTask } from "../utils/todoRequests";
+import {
+  createTask,
+  getTask,
+  getTasksObject,
+  updateTask,
+} from "../utils/todoRequests";
 import { TaskState } from "../utils/types";
 import formTaskState from "../utils/formTaskState";
 import defaultTasks from "../utils/defaultTasks";
@@ -19,7 +24,7 @@ const TaskBoard: FC<{ taskListId: string }> = ({ taskListId }) => {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [taskListId]);
 
   const onDragEnd = async (result: DropResult) => {
     if (
@@ -77,21 +82,45 @@ const TaskBoard: FC<{ taskListId: string }> = ({ taskListId }) => {
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="flex gap-4 h-full">
           {taskState.columnOrder.map((columnId) => {
+            const [newTaskName, setNewTaskName] = useState("");
+
             const column = taskState.columns[columnId];
             const tasks = column.taskIds.map(
               (taskId) => taskState.tasks[taskId]
             );
+            const onNewTaskName = (e) => setNewTaskName(e.target.value);
 
             return (
-              <div className="flex flex-col p-4 border border-transparent /* hover: */ border-gray-700 focus-within:border-gray-700 rounded-lg transition-colors gap-4 pb-0">
+              <div className="flex flex-col p-4 border border-transparent rounded-lg transition-colors gap-4 pb-0 w-64">
                 <h2 className="text-xl font-bold">{column.title}</h2>
+                <form
+                  className="flex rounded-lg border border-gray-700 focus-within:shadow focus-within:border-transparent focus-within:bg-gray-700 transition-all overflow-hidden bg-gray-700"
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const newTaskNameCopy = newTaskName;
+                    setNewTaskName("");
+                    console.log(newTaskNameCopy);
+                    await createTask(taskListId, {
+                      title: newTaskNameCopy,
+                      status: column.id as TaskStatus,
+                    });
+                    fetchTasks();
+                  }}
+                >
+                  <input
+                    className="w-full px-4 py-3 focus:outline-none bg-transparent"
+                    type="text"
+                    placeholder="Add task"
+                    value={newTaskName}
+                    onChange={onNewTaskName}
+                  />
+                </form>
                 <Column
                   key={column.id}
                   column={column}
                   tasks={tasks}
-                  taskListId={taskListId}
                   fetchTasks={fetchTasks}
                 />
               </div>

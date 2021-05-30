@@ -1,7 +1,7 @@
 import { useMsal } from "@azure/msal-react";
 import { TodoTaskList } from "@microsoft/microsoft-graph-types";
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "react-feather";
+import { ArrowLeft, CheckCircle } from "react-feather";
 import { getTaskLists } from "../utils/todoRequests";
 import TaskBoard from "./TaskBoard";
 
@@ -10,6 +10,8 @@ const AuthenticatedDashboard = () => {
   const [currentTaskList, setCurrentTaskList] = useState<TodoTaskList>();
   const { instance } = useMsal();
   const activeAccount = instance.getActiveAccount();
+
+  console.log(currentTaskList?.id);
 
   const fetchTaskLists = async () => {
     setTaskLists(await getTaskLists());
@@ -21,56 +23,35 @@ const AuthenticatedDashboard = () => {
 
   return (
     <>
-      <div className="flex flex-col gap-8">
-        <header className="col-span-2">
-          <h1 className="text-3xl font-bold flex gap-4 items-center">
-            {currentTaskList ? (
-              <>
-                <ArrowLeft
-                  onClick={() => setCurrentTaskList(undefined)}
-                  className="cursor-pointer"
-                />
-                {currentTaskList.displayName}
-              </>
-            ) : (
-              "Honbrasoft Craplo"
-            )}
-          </h1>
+      <div className="flex  flex-col h-full w-full absolute top-0 left-0">
+        <header className="w-full p-4 bg-gray-700">
+          <h1 className="text-2xl font-bold">Honbrasoft Craplo</h1>
         </header>
-        {currentTaskList ? (
-          <TaskBoard taskListId={currentTaskList.id} />
-        ) : (
-          <div className="grid grid-cols-2 gap-4">
-            <section className="p-4 bg-gray-700 shadow rounded-lg flex gap-4 flex-col">
-              <h2 className="text-2xl font-bold">Your To-Do lists</h2>
-              <ul className="flex flex-col gap-2">
-                {taskLists.map((taskList) => (
-                  <li key={taskList.id}>
-                    <a
-                      className="cursor-pointer border-b border-transparent hover:border-white transition-color"
-                      onClick={() => {
-                        console.log(taskList.id);
-                        setCurrentTaskList(taskList);
-                      }}
-                    >
-                      {taskList.displayName}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </section>
-            <section className="p-4 bg-gray-700 shadow rounded-lg flex gap-4 flex-col">
-              <h2 className="text-2xl font-bold">Your account</h2>
-              <h3 className="text-xl font-semibold">{activeAccount.name}</h3>
-              <a
-                className="cursor-pointer border-b border-transparent hover:border-white transition-color w-max"
-                onClick={() => instance.logout()}
+        <div className="h-full w-full flex">
+          <aside className="h-full w-64 p-4 flex flex-col gap-2 pt-2 bg-gray-700">
+            {taskLists.map((taskList) => (
+              <button
+                className={`px-4 py-2 text-left rounded-lg hover:bg-gray-600 transition-colors flex gap-2 items-center border-2 border-transparent focus:outline-none ${
+                  currentTaskList === taskList
+                    ? "bg-gray-600  border-gray-500"
+                    : ""
+                }`}
+                key={taskList.id}
+                onClick={() => setCurrentTaskList(taskList)}
               >
-                Sign out
-              </a>
-            </section>
-          </div>
-        )}
+                <CheckCircle height="16" width="16" className="" />
+                {taskList.displayName}
+              </button>
+            ))}
+          </aside>
+          <main className="w-full h-full bg-gray-800 p-4 overflow-auto">
+            {currentTaskList ? (
+              <TaskBoard taskListId={currentTaskList.id} />
+            ) : (
+              "content goes here"
+            )}
+          </main>
+        </div>
       </div>
     </>
   );

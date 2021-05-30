@@ -6,6 +6,7 @@ import { PublicClientApplication, EventType } from "@azure/msal-browser";
 import { msalConfig } from "../utils/authConfig";
 import { CustomNavigationClient } from "../utils/NavigationClient";
 import "../styles/globals.css";
+import { Toaster } from "react-hot-toast";
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -40,9 +41,8 @@ export default function MyApp({ Component, pageProps }) {
       </Head>
 
       <MsalProvider instance={msalInstance}>
-        <div className="max-w-4xl p-8 mx-auto">
-          <Component {...pageProps} />
-        </div>
+        <Toaster />
+        <Component {...pageProps} />
       </MsalProvider>
     </>
   );
