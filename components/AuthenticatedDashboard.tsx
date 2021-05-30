@@ -44,7 +44,7 @@ const AuthenticatedDashboard = () => {
               </button>
             ))}
           </aside>
-          <main className="w-full h-full bg-gray-800 p-4 overflow-auto">
+          <main className="w-full h-full bg-gray-800 p-4 overflow-auto rounded-tl-xl">
             {currentTaskList ? (
               <TaskBoard taskListId={currentTaskList.id} />
             ) : (

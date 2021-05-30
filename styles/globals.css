@@ -3,6 +3,6 @@
 @tailwind utilities;
 
 html {
-  @apply bg-gray-800;
+  @apply bg-gray-700;
   @apply text-white;
 }

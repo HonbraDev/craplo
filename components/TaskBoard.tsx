@@ -93,7 +93,7 @@ const TaskBoard: FC<{ taskListId: string }> = ({ taskListId }) => {
             const onNewTaskName = (e) => setNewTaskName(e.target.value);
 
             return (
-              <div className="flex flex-col p-4 border border-transparent rounded-lg transition-colors gap-4 pb-0 w-64">
+              <div className="flex flex-col border border-transparent transition-colors gap-4 pb-0 w-60 p-2">
                 <h2 className="text-xl font-bold">{column.title}</h2>
                 <form
                   className="flex rounded-lg border border-gray-700 focus-within:shadow focus-within:border-transparent focus-within:bg-gray-700 transition-all overflow-hidden bg-gray-700"
