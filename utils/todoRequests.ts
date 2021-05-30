@@ -1,4 +1,4 @@
-import client from "../src/msGraphClient";
+import client from "./msGraphClient";
 import { TodoTask, TodoTaskList } from "@microsoft/microsoft-graph-types";
 import { PageIterator } from "@microsoft/microsoft-graph-client";
 

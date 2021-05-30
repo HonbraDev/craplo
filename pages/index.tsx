@@ -1,6 +1,7 @@
 import { useMsal } from "@azure/msal-react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { loginRequest } from "../utils/authConfig";
 
 const Dashboard = () => {
   const { instance } = useMsal();
@@ -21,7 +22,7 @@ const Dashboard = () => {
         <section className="p-4 bg-gray-700 shadow rounded-lg flex gap-4 flex-col w-1/2">
           <button
             className="cursor-pointer border-b border-transparent hover:border-white transition-color w-max"
-            onClick={() => instance.loginPopup()}
+            onClick={() => instance.loginPopup(loginRequest).catch((e) => {})}
           >
             Sign in with Microsoft
           </button>

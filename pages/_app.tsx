@@ -3,8 +3,8 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { MsalProvider } from "@azure/msal-react";
 import { PublicClientApplication, EventType } from "@azure/msal-browser";
-import { msalConfig } from "../src/authConfig";
-import { CustomNavigationClient } from "../src/NavigationClient";
+import { msalConfig } from "../utils/authConfig";
+import { CustomNavigationClient } from "../utils/NavigationClient";
 import "../styles/globals.css";
 
 export const msalInstance = new PublicClientApplication(msalConfig);
