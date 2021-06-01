@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { MsalProvider } from "@azure/msal-react";
@@ -7,6 +7,9 @@ import { msalConfig } from "../utils/authConfig";
 import { CustomNavigationClient } from "../utils/NavigationClient";
 import "../styles/globals.css";
 import { Toaster } from "react-hot-toast";
+import { ThemeProvider } from "@material-ui/styles";
+import theme from "../utils/theme";
+import { CssBaseline } from "@material-ui/core";
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -30,6 +33,12 @@ export default function MyApp({ Component, pageProps }) {
   const navigationClient = new CustomNavigationClient(router);
   msalInstance.setNavigationClient(navigationClient);
 
+  useEffect(() => {
+    // Remove the server-side injected CSS.
+    const jssStyles = document.querySelector("#jss-server-side");
+    if (jssStyles) jssStyles.parentElement.removeChild(jssStyles);
+  }, []);
+
   return (
     <>
       <Head>
@@ -40,10 +49,13 @@ export default function MyApp({ Component, pageProps }) {
         />
       </Head>
 
-      <MsalProvider instance={msalInstance}>
-        <Toaster />
-        <Component {...pageProps} />
-      </MsalProvider>
+      <ThemeProvider theme={theme}>
+        <MsalProvider instance={msalInstance}>
+          <Toaster />
+          <CssBaseline />
+          <Component {...pageProps} />
+        </MsalProvider>
+      </ThemeProvider>
     </>
   );
 }

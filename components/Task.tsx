@@ -1,30 +1,36 @@
+import { Card, createStyles, makeStyles, Theme } from "@material-ui/core";
 import { TodoTask } from "@microsoft/microsoft-graph-types";
 import { FC } from "react";
 import { Draggable } from "react-beautiful-dnd";
-import { X } from "react-feather";
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    dragged: {
+      boxShadow: theme.shadows[1],
+      borderRadius: theme.shape.borderRadius,
+    },
+  })
+);
 
 const Task: FC<{
   task: TodoTask;
   index: number;
   listId: string;
-  deleteTask: (id: string) => Promise<void>;
-}> = ({ task, index, listId, deleteTask }) => {
+}> = ({ task, index, listId }) => {
+  const classes = useStyles();
+
   return (
     <Draggable draggableId={task.id} index={index}>
-      {(provided) => (
+      {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className="px-4 py-3 w-full border border-gray-400 rounded-lg bg-white mb-4 flex items-center justify-between group"
+          className={`w-full flex gap-2 items-center px-3 py-2 bg-white hover:z-10 relative ${
+            snapshot.isDragging ? classes.dragged : ""
+          }`}
         >
           <span>{task.title}</span>
-          <X
-            height="20"
-            width="20"
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={() => deleteTask(task.id)}
-          />
         </div>
       )}
     </Draggable>
