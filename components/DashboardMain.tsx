@@ -8,7 +8,7 @@ import { TaskState } from "../utils/types";
 import BaseLayout from "./BaseLayout";
 import Column from "./Column";
 
-const BetaDashboardMain = () => {
+const DashboardMain = () => {
   const [state, setState] = useState<TaskState>(formTaskState(exampleTasks));
   const [lists, setLists] = useState([
     "Default list",
@@ -16,6 +16,7 @@ const BetaDashboardMain = () => {
     "List two",
     "List three",
   ]);
+
   return (
     <>
       <BaseLayout
@@ -76,4 +77,4 @@ const BetaDashboardMain = () => {
   );
 };
 
-export default BetaDashboardMain;
+export default DashboardMain;

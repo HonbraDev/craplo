@@ -1,4 +1,4 @@
-import { Card, createStyles, makeStyles, Theme } from "@material-ui/core";
+import { createStyles, makeStyles, Theme } from "@material-ui/core";
 import { TodoTask } from "@microsoft/microsoft-graph-types";
 import { FC } from "react";
 import { Draggable } from "react-beautiful-dnd";
