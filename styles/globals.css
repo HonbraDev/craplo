@@ -1,8 +1,10 @@
-@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 html {
-  @apply bg-gray-700;
-  @apply text-white;
+  background-image: url("https://images.unsplash.com/photo-1542241647-9cbbada2b309");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 100%;
 }
