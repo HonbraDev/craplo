@@ -28,10 +28,12 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const Column: FC<{
+export interface ColumnProps {
   column: ColumnType;
   tasks: TodoTask[];
-}> = ({ column, tasks }) => {
+}
+
+const Column: FC<ColumnProps> = ({ column, tasks }) => {
   const classes = useStyles();
 
   return (

@@ -12,11 +12,13 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const Task: FC<{
+export interface TaskProps {
   task: TodoTask;
   index: number;
   listId: string;
-}> = ({ task, index, listId }) => {
+}
+
+const Task: FC<TaskProps> = ({ task, index, listId }) => {
   const classes = useStyles();
 
   return (

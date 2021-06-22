@@ -36,14 +36,14 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export interface LayoutProps {
+export interface BaseLayoutProps {
   branding: string;
   drawerContent: ReactChildren | ReactChild;
   children: ReactChildren | ReactChild;
-  appBarChildren: ReactChildren | ReactChild;
+  appBarChildren?: ReactChildren | ReactChild;
 }
 
-const BaseLayout: FC<LayoutProps> = ({
+const BaseLayout: FC<BaseLayoutProps> = ({
   branding,
   drawerContent,
   children,
