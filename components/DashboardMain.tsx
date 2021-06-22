@@ -1,51 +1,71 @@
+import { ListAlt } from "@material-ui/icons";
+import { TaskStatus, TodoTaskList } from "@microsoft/microsoft-graph-types";
+import { useEffect, useState } from "react";
+import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import formTaskState from "../utils/formTaskState";
+import { TaskState } from "../utils/types";
+import useInterval from "../utils/useInterval";
+import BaseLayout from "./BaseLayout";
+import Column from "./Column";
 import {
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   CircularProgress,
-  Button,
 } from "@material-ui/core";
-import { ListAlt } from "@material-ui/icons";
-import { TaskStatus, TodoTaskList } from "@microsoft/microsoft-graph-types";
-import { useEffect, useState } from "react";
-import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import formTaskState from "../utils/formTaskState";
 import {
   getTaskLists,
   getTasksObject,
   updateTask,
 } from "../utils/todoRequests";
-import { TaskState } from "../utils/types";
-import useInterval from "../utils/useInterval";
-import BaseLayout from "./BaseLayout";
-import Column from "./Column";
 
 const DashboardMain = () => {
   const [taskState, setTaskState] = useState<TaskState>(formTaskState({}));
-  const [listsArray, setListsArray] = useState<TodoTaskList[]>([]);
-  const [selectedList, setSelectedList] = useState("");
-  const [taskListsLoading, setTaskListsLoading] = useState(true);
   const [tasksLoading, setTasksLoading] = useState(true);
+  const [taskLists, setTaskLists] = useState<TodoTaskList[]>([]);
+  const [taskListsLoading, setTaskListsLoading] = useState(true);
+  const [selectedTaskList, setSelectedTaskList] = useState("");
 
-  const fetchTaskLists = async (loading?: boolean) => {
-    if (loading) setTaskListsLoading(true);
-    const newTaskListsArray = await getTaskLists();
-    if (!selectedList) setSelectedList(newTaskListsArray[0].id);
-    setListsArray(newTaskListsArray);
-    if (loading) setTaskListsLoading(false);
+  // fetch user's tasklists
+  const fetchTaskLists = async (showLoadingIndicator?: boolean) => {
+    // enable loading indicator
+    if (showLoadingIndicator) setTaskListsLoading(true);
+
+    // fetch tasklists
+    const newTaskLists = await getTaskLists();
+
+    // if there isn't a tasklist selected, select the first one
+    if (!selectedTaskList) setSelectedTaskList(newTaskLists[0].id);
+
+    // update the state
+    setTaskLists(newTaskLists);
+
+    // disable loading indicator
+    if (showLoadingIndicator) setTaskListsLoading(false);
   };
 
-  const fetchTasks = async (loading?: boolean) => {
-    if (listsArray.length === 0) return;
+  // fetch tasks from the selected tasklist
+  const fetchTasks = async (showLoadingIndicator?: boolean) => {
+    // if there aren't any tasklists or there isn't a tasklist selected, return
+    if (taskLists.length === 0) return;
 
-    if (loading) setTasksLoading(true);
-    const newTasks = await getTasksObject(selectedList);
+    // enable loading indicator
+    if (showLoadingIndicator) setTasksLoading(true);
+
+    // fetch tasks from selected tasklist
+    const newTasks = await getTasksObject(selectedTaskList);
+
+    // parse fetched tasks and update state
     setTaskState(formTaskState(newTasks));
-    if (loading) setTasksLoading(false);
+
+    // disable loading indicator
+    if (showLoadingIndicator) setTasksLoading(false);
   };
 
+  // rearrange and update dragged task
   const onDragEnd = async (result: DropResult) => {
+    // if we don't need to update, return
     if (
       !result.destination ||
       (result.source.droppableId === result.destination.droppableId &&
@@ -53,8 +73,10 @@ const DashboardMain = () => {
     )
       return;
 
+    // copy the current state
     const taskStateCopy = { ...taskState };
 
+    // remove the task from the source
     taskStateCopy.columns[result.source.droppableId].taskIds.splice(
       taskStateCopy.columns[result.source.droppableId].taskIds.indexOf(
         result.draggableId
@@ -62,18 +84,22 @@ const DashboardMain = () => {
       1
     );
 
+    // add the task to the destination
     taskStateCopy.columns[result.destination.droppableId].taskIds.splice(
       result.destination.index,
       0,
       result.draggableId
     );
 
+    // optimistic ui
     setTaskState(taskStateCopy);
 
+    // get all tasks in the destination list
     const tasks = taskStateCopy.columns[
       result.destination.droppableId
     ].taskIds.map((taskId) => taskState.tasks[taskId]);
 
+    // generate updated tasks
     const updatedTasks = tasks.map((task, index) => ({
       ...task,
       status: result.destination.droppableId as TaskStatus,
@@ -82,6 +108,7 @@ const DashboardMain = () => {
       },
     }));
 
+    // filter only those which we really need to update
     const filteredTasks = updatedTasks.filter((task, index) => {
       return (
         tasks[index].body.content !== task.body.content ||
@@ -89,25 +116,31 @@ const DashboardMain = () => {
       );
     });
 
-    const updateTaskPromises = filteredTasks.map((task, index) =>
-      updateTask(selectedList, task.id, task)
+    // create promises to update the tasks
+    const updateTaskPromises = filteredTasks.map((task) =>
+      updateTask(selectedTaskList, task.id, task)
     );
 
+    // await the promises
     await Promise.all(updateTaskPromises);
   };
 
+  // initially fetch the tasklists
   useEffect(() => {
     fetchTaskLists(true);
   }, []);
 
+  // fetch the tasks everytime the selected tasklist updates
   useEffect(() => {
     fetchTasks(true);
-  }, [selectedList, listsArray]);
+  }, [selectedTaskList]);
 
+  // fetch tasklists every 15 seconds
   useInterval(() => {
     fetchTaskLists();
   }, 15000);
 
+  // fetch tasks from selected tasklist every 10 seconds
   useInterval(() => {
     fetchTasks();
   }, 10000);
@@ -122,12 +155,12 @@ const DashboardMain = () => {
             {taskListsLoading ? (
               <CircularProgress className="mx-auto my-4 block" />
             ) : (
-              listsArray.map((list, index) => (
+              taskLists.map((list) => (
                 <ListItem
                   button
                   key={list.id}
-                  selected={list.id === selectedList}
-                  onClick={() => setSelectedList(list.id)}
+                  selected={list.id === selectedTaskList}
+                  onClick={() => setSelectedTaskList(list.id)}
                 >
                   <ListItemIcon>
                     <ListAlt />
