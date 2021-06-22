@@ -1,6 +1,7 @@
 import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
 import { AppBar, Toolbar, Typography, Drawer } from "@material-ui/core";
-import { FC, ReactChild, ReactChildren } from "react";
+import React, { FC, ReactChild, ReactChildren } from "react";
+import { Button } from "@material-ui/core";
 
 const drawerWidth = 240;
 
@@ -39,9 +40,15 @@ export interface LayoutProps {
   branding: string;
   drawerContent: ReactChildren | ReactChild;
   children: ReactChildren | ReactChild;
+  appBarChildren: ReactChildren | ReactChild;
 }
 
-const BaseLayout: FC<LayoutProps> = ({ branding, drawerContent, children }) => {
+const BaseLayout: FC<LayoutProps> = ({
+  branding,
+  drawerContent,
+  children,
+  appBarChildren,
+}) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
@@ -50,6 +57,7 @@ const BaseLayout: FC<LayoutProps> = ({ branding, drawerContent, children }) => {
           <Typography variant="h6" noWrap>
             {branding}
           </Typography>
+          {appBarChildren}
         </Toolbar>
       </AppBar>
       <Drawer
