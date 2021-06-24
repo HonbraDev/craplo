@@ -1,5 +1,9 @@
-import { ListAlt } from "@material-ui/icons";
-import { TaskStatus, TodoTaskList } from "@microsoft/microsoft-graph-types";
+import { ListAlt, UsbOutlined } from "@material-ui/icons";
+import {
+  TaskStatus,
+  TodoTaskList,
+  TodoTask,
+} from "@microsoft/microsoft-graph-types";
 import { useEffect, useState } from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import formTaskState from "../utils/formTaskState";
@@ -7,6 +11,7 @@ import { TaskState } from "../utils/types";
 import useInterval from "../utils/useInterval";
 import BaseLayout from "./BaseLayout";
 import Column from "./Column";
+import { v4 as uuidV4 } from "uuid";
 import {
   List,
   ListItem,
@@ -15,10 +20,13 @@ import {
   CircularProgress,
 } from "@material-ui/core";
 import {
+  createTask,
+  deleteTask,
   getTaskLists,
   getTasksObject,
   updateTask,
 } from "../utils/todoRequests";
+import toast from "react-hot-toast";
 
 const DashboardMain = () => {
   const [taskState, setTaskState] = useState<TaskState>(formTaskState({}));
@@ -26,6 +34,7 @@ const DashboardMain = () => {
   const [taskLists, setTaskLists] = useState<TodoTaskList[]>([]);
   const [taskListsLoading, setTaskListsLoading] = useState(true);
   const [selectedTaskList, setSelectedTaskList] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // fetch user's tasklists
   const fetchTaskLists = async (showLoadingIndicator?: boolean) => {
@@ -35,11 +44,11 @@ const DashboardMain = () => {
     // fetch tasklists
     const newTaskLists = await getTaskLists();
 
-    // if there isn't a tasklist selected, select the first one
-    if (!selectedTaskList) setSelectedTaskList(newTaskLists[0].id);
-
     // update the state
     setTaskLists(newTaskLists);
+
+    // if there isn't a tasklist selected, select the first one
+    if (!selectedTaskList) setSelectedTaskList(newTaskLists[0].id);
 
     // disable loading indicator
     if (showLoadingIndicator) setTaskListsLoading(false);
@@ -47,6 +56,8 @@ const DashboardMain = () => {
 
   // fetch tasks from the selected tasklist
   const fetchTasks = async (showLoadingIndicator?: boolean) => {
+    if (loading) return;
+
     // if there aren't any tasklists or there isn't a tasklist selected, return
     if (taskLists.length === 0) return;
 
@@ -65,6 +76,8 @@ const DashboardMain = () => {
 
   // rearrange and update dragged task
   const onDragEnd = async (result: DropResult) => {
+    if (loading) return toast.error("Can't move tasks while loading");
+
     // if we don't need to update, return
     if (
       !result.destination ||
@@ -125,6 +138,82 @@ const DashboardMain = () => {
     await Promise.all(updateTaskPromises);
   };
 
+  // add task to tasklist
+  const addTask = async ({
+    title,
+    status,
+    ...otherProps
+  }: {
+    title: TodoTask["title"];
+    status: TodoTask["status"];
+  } & TodoTask) => {
+    const createTaskPromise = createTask(selectedTaskList, {
+      title,
+      status,
+      ...otherProps,
+    });
+    toast.promise(createTaskPromise, {
+      loading: "Creating task",
+      success: "Task created",
+      error: "Can't create task",
+    });
+    setLoading(true);
+    const taskId = uuidV4();
+    let taskStateCopy = { ...taskState };
+    taskStateCopy.tasks[taskId] = {
+      title,
+      status,
+      id: taskId,
+      body: {
+        content: taskStateCopy.columns[status].taskIds.length.toString(),
+      },
+      ...otherProps,
+    };
+    taskStateCopy.columns[status].taskIds.push(taskId);
+    setTaskState(taskStateCopy);
+
+    const createdTask = await createTaskPromise;
+
+    taskStateCopy = { ...taskState };
+    delete taskStateCopy.tasks[taskId];
+    taskStateCopy.columns[status].taskIds.splice(
+      taskStateCopy.columns[status].taskIds.indexOf(taskId),
+      1
+    );
+
+    taskStateCopy.tasks[createdTask.id] = createdTask;
+    taskStateCopy.columns[status].taskIds.push(createdTask.id);
+
+    setTaskState(taskStateCopy);
+    setLoading(false);
+  };
+
+  const removeTask = async (taskId: string) => {
+    const deleteTaskPromise = deleteTask(selectedTaskList, taskId);
+    toast.promise(deleteTaskPromise, {
+      loading: "Deleting task",
+      success: "Task deleted",
+      error: "Can't delete task",
+    });
+    setLoading(true);
+
+    const taskStateCopy = { ...taskState };
+
+    delete taskStateCopy.tasks[taskId];
+
+    taskStateCopy.columns[taskStateCopy[taskId].state].taskIds.splice(
+      taskStateCopy.columns[taskStateCopy[taskId].state].taskIds.indexOf(
+        taskId
+      ),
+      1
+    );
+
+    setTaskState(taskStateCopy);
+
+    await deleteTaskPromise;
+    setLoading(false);
+  };
+
   // initially fetch the tasklists
   useEffect(() => {
     fetchTaskLists(true);
@@ -183,7 +272,15 @@ const DashboardMain = () => {
                   (taskId) => taskState.tasks[taskId]
                 );
 
-                return <Column key={columnId} tasks={tasks} column={column} />;
+                return (
+                  <Column
+                    key={columnId}
+                    tasks={tasks}
+                    column={column}
+                    addTask={addTask}
+                    removeTask={removeTask}
+                  />
+                );
               })}
             </div>
           </DragDropContext>
